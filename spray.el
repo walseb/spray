@@ -272,19 +272,21 @@ decreasing by one for each subsequent word."
     (narrow-to-region beg end)))
 
 (defun spray--update ()
-  (cond ((not (zerop spray--initial-delay))
-         (setq spray--initial-delay (1- spray--initial-delay)))
-        ((not (zerop spray--delay))
-         (setq spray--delay (1- spray--delay)))
-        (t
-         (widen)
-         (if (eobp)
-             (spray-quit)
-           (when (not (zerop spray--first-words))
-             (setq spray--initial-delay spray--first-words)
-             (setq spray--first-words (1- spray--first-words)))
-           (skip-chars-forward "\s\t\n—")
-           (spray--word-at-point)))))
+  (if (not spray-mode)
+      (spray-stop)
+    (cond ((not (zerop spray--initial-delay))
+           (setq spray--initial-delay (1- spray--initial-delay)))
+          ((not (zerop spray--delay))
+           (setq spray--delay (1- spray--delay)))
+          (t
+           (widen)
+           (if (eobp)
+	       (spray-quit)
+             (when (not (zerop spray--first-words))
+	       (setq spray--initial-delay spray--first-words)
+	       (setq spray--first-words (1- spray--first-words)))
+             (skip-chars-forward "\s\t\n—")
+             (spray--word-at-point))))))
 
 ;; * interactive commands
 
@@ -306,6 +308,7 @@ Returns t if spray was unpaused."
   "Start / resume spray."
   (interactive)
   (setq spray--first-words spray-ramp)
+  (spray-stop)
   (setq spray--running
         (run-with-timer 0 (/ 60.0 spray-wpm) 'spray--update)))
 
